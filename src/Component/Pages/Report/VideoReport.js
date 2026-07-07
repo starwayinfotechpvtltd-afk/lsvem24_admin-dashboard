@@ -1,0 +1,325 @@
+import React, { useEffect, useState } from "react";
+import Input from "../../extra/Input";
+import Selector from "../../extra/Selector";
+import NewTitle from "../../extra/Title";
+import {
+  getVideoReport,
+  deleteVideoReport,
+  cleanReportData,
+} from "../../store/report/report.action";
+import { FormControlLabel, Switch } from "@mui/material";
+import { ReactComponent as TrashIcon } from "../../../assets/icons/trashIcon.svg";
+import styled from "@emotion/styled";
+import noImageFound from "../../../assets/images/noimage.png";
+import Button from "../../extra/Button";
+import { ReactComponent as EditIcon } from "../../../assets/icons/EditBtn.svg";
+import AddIcon from "@mui/icons-material/Add";
+import { connect, useDispatch, useSelector } from "react-redux";
+import Pagination from "../../extra/Pagination";
+import Table from "../../extra/Table";
+import dayjs from "dayjs";
+import $ from "jquery";
+import UserImage from "../../../assets/images/noimage.png";
+import WithdrawItemAdd from "../../dialogue/WithdrawItemAdd";
+import { OPEN_DIALOGUE } from "../../store/dialogue/dialogue.type";
+import ToggleSwitch from "../../extra/ToggleSwitch";
+import { warning } from "../../../util/Alert";
+import Searching from "../../extra/Searching";
+import { IconTrash } from "@tabler/icons-react";
+import LazyImage from "../../../common/ImageFallback";
+
+function VideoReport(props) {
+  const { videoReport, totalVideoReport } = useSelector(
+    (state) => state.report
+  );
+  const { startDate, endDate, multiButtonSelectData } = props;
+
+
+  const dispatch = useDispatch();
+  const [data, setData] = useState();
+  const [page, setPage] = useState(1);
+  const [size, setSize] = useState(20);
+  const [showImg, setShowImg] = useState();
+  const [search, setSearch] = useState();
+  const [actionPagination, setActionPagination] = useState("delete");
+  const [selectCheckData, setSelectCheckData] = useState([]);
+  const [selectAllChecked, setSelectAllChecked] = useState(false);
+
+  const startDateFormat = (startDate) => {
+    return startDate && dayjs(startDate).isValid()
+      ? dayjs(startDate).format("YYYY-MM-DD")
+      : "All";
+  };
+  const endDateFormat = (endDate) => {
+    return endDate && dayjs(endDate).isValid()
+      ? dayjs(endDate).format("YYYY-MM-DD")
+      : "All";
+  };
+
+  const startDateData = startDateFormat(startDate);
+  const endDateData = endDateFormat(endDate);
+
+  useEffect(() => {
+    dispatch(getVideoReport(page, size, startDateData, endDateData, 1));
+    return () => {
+      dispatch(cleanReportData());
+    }
+  }, [dispatch, page, size, startDate, endDate]);
+
+  useEffect(() => {
+    setData(videoReport);
+  }, [videoReport]);
+
+  const videoReportTable = [
+    {
+      Header: "checkBox",
+      width: "20px",
+      Cell: ({ row }) => (
+        <input
+          type="checkbox"
+          checked={selectCheckData.some(
+            (selectedRow) => selectedRow?._id === row?._id
+          )}
+          onChange={(e) => handleSelectCheckData(e, row)}
+        />
+      ),
+    },
+    {
+      Header: "NO",
+      body: "no",
+      Cell: ({ index }) => (
+        <span className="  text-nowrap">
+          {(page - 1) * size + parseInt(index) + 1}
+        </span>
+      ),
+    },
+    {
+      Header: "VIDEO IMAGE",
+      body: "image",
+      Cell: ({ row }) => (
+        // <img
+        //   src={row.videoImage || noImageFound}
+        //   width="80px"
+        //   height="100px"
+        //   style={{ objectFit: "cover" }}
+        //   onError={(e) => {
+        //     e.target.src = noImageFound;
+        //   }}
+        // />
+        <LazyImage imageSrc={row?.videoImage} width="80px" height="100px" />
+      ),
+    },
+    {
+      Header: "CHANNEL NAME",
+      body: "fullName",
+      Cell: ({ row }) => (
+        <span className="text-capitalize text-nowrap">{row?.fullName}</span>
+      ),
+    },
+    {
+      Header: "VIDEO ID",
+      body: "uniqueVideoId",
+      Cell: ({ row }) => (
+        <span className="text-capitalize">{row?.uniqueVideoId}</span>
+      ),
+    },
+
+
+    {
+      Header: "VIDEO TITLE",
+      body: "videoTitle",
+      Cell: ({ row }) => (
+        <span className="text-capitalize">{row?.videoTitle}</span>
+      ),
+    },
+    {
+      Header: "VIDEO REPORT TYPE",
+      body: "reportType",
+      Cell: ({ row }) => (
+        <>
+          {row?.reportType === 1 && (
+            <span className="text-capitalize">Sexual</span>
+          )}
+          {row?.reportType === 2 && (
+            <span className="text-capitalize">Violent or Replusive</span>
+          )}
+          {row?.reportType === 3 && (
+            <span className="text-capitalize">Hateful or Abusive</span>
+          )}
+          {row?.reportType === 4 && (
+            <span className="text-capitalize">Harmful or Dangerous</span>
+          )}
+          {row?.reportType === 5 && (
+            <span className="text-capitalize">Spam or Misleading</span>
+          )}
+          {row?.reportType === 6 && (
+            <span className="text-capitalize">Child abuse</span>
+          )}
+          {row?.reportType === 7 && (
+            <span className="text-capitalize">Others</span>
+          )}
+        </>
+      ),
+    },
+    {
+      Header: "VIDEO REPORTED",
+      body: "createdAt",
+      Cell: ({ row }) => (
+        <span className="text-capitalize">
+          {row?.createdAt ? dayjs(row?.createdAt).format("DD MMMM YYYY") : ""}
+        </span>
+      ),
+    },
+    {
+      Header: "ACTION",
+      body: "action",
+      Cell: ({ row }) => (
+        <div className="action-button">
+          {/* <Button
+            btnIcon={<TrashIcon />}
+            onClick={() => handleDeleteUser(row)}
+          /> */}
+          <button className="btn btn-sm" onClick={() => handleDeleteUser(row)}>
+            <IconTrash className="text-secondary" />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+
+  const handleSelectCheckData = (e, row) => {
+
+    const checked = e.target.checked;
+    if (checked) {
+      setSelectCheckData((prevSelectedRows) => [...prevSelectedRows, row]);
+    } else {
+      setSelectCheckData((prevSelectedRows) =>
+        prevSelectedRows.filter((selectedRow) => selectedRow._id !== row._id)
+      );
+    }
+  };
+  const handleSelectAll = (event) => {
+
+    const checked = event.target.checked;
+    setSelectAllChecked(checked);
+    if (checked) {
+      setSelectCheckData([...data]);
+    } else {
+      setSelectCheckData([]);
+    }
+  };
+  const paginationSubmitButton = () => {
+
+    const selectCheckDataGetId = selectCheckData?.map((item) => item?._id);
+    if (actionPagination === "delete" && selectCheckDataGetId?.length > 0) {
+      const data = warning();
+      data
+        .then((res) => {
+          const yes = res.isConfirmed
+          if (yes) {
+            if (res) {
+              props.deleteVideoReport(selectCheckDataGetId);
+            }
+          }
+        })
+        .catch((err) => console.log(err));
+    }
+  };
+  const handleDeleteUser = (row) => {
+
+    const data = warning();
+    data
+      .then((res) => {
+        if (res) {
+          const yes = res.isConfirmed
+          if (yes) {
+            const id = row?._id;
+            props.deleteVideoReport(id, "user");
+          }
+        }
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const handlePageChange = (pageNumber) => {
+    setPage(pageNumber);
+  };
+
+  const handleRowsPerPage = (value) => {
+    setPage(1);
+    setSize(value);
+  };
+
+  const handleFilterData = (filteredData) => {
+    if (typeof filteredData === "string") {
+      setSearch(filteredData);
+    } else {
+      setData(filteredData);
+    }
+  };
+
+  return (
+    <div className="">
+      <div className=" user-table mb-3">
+        <div className="user-table-top">
+          <div className="d-flex justify-content-between align-items-center w-100">
+
+            <div className="w-100">
+              <h5
+                style={{
+                  fontWeight: "500",
+                  fontSize: "20px",
+                }}
+              >
+                Video Report Table
+              </h5>
+            </div>
+            <Searching
+              placeholder={"Search..."}
+              data={videoReport}
+              label={"Search for ID, Keyword, Username,Name,Title,Reported "}
+              type={"client"}
+              setData={setData}
+              onFilterData={handleFilterData}
+              searchValue={search}
+              customSelectDataShow={true}
+              customSelectData={["Delete"]}
+              actionPagination={actionPagination}
+              setActionPagination={setActionPagination}
+              paginationSubmitButton={paginationSubmitButton}
+              className={"d-flex justify-content-end w-100"}
+            />
+
+          </div>
+        </div>
+        <div className="">
+          <Table
+            data={data}
+            mapData={videoReportTable}
+            serverPerPage={size}
+            serverPage={page}
+            handleSelectAll={handleSelectAll}
+            selectAllChecked={selectAllChecked}
+            type={"server"}
+          />
+          <div className="">
+            <Pagination
+              type={"server"}
+              activePage={page}
+              rowsPerPage={size}
+              userTotal={totalVideoReport}
+              setPage={setPage}
+              handleRowsPerPage={handleRowsPerPage}
+              handlePageChange={handlePageChange}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+export default connect(null, {
+  getVideoReport,
+  deleteVideoReport,
+})(VideoReport);

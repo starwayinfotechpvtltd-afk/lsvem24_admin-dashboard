@@ -1,0 +1,5 @@
+:root {
+ --new-color : #ff5e75;
+ --new-border-color : #dfdfdfef;
+ --new-color-gradient : linear-gradient(98deg,var(--new-color) 0%, rgba(245, 122, 141, 1) 66%);
+}
