@@ -167,7 +167,7 @@ const Login = () => {
                 <h4
                   className="cursor-pointer fs-6 text-center text-secondary"
                   style={{ fontWeight: 500, fontSize: "small" }}
-                  onClick={() => navigate("/register")}
+                  onClick={() => navigate("/")}
                 >
                   Don't have an account?
                 </h4>
