@@ -1,12 +1,8 @@
 services:
 
   admin:
-
     build: .
-
     container_name: admin
-
     restart: always
-
     ports:
-      - "3000:80"
+      - "127.0.0.1:8080:80"
