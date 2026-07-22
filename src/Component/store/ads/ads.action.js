@@ -203,6 +203,52 @@ export const bulkToggleStatus = (ids, isActive) => (dispatch) => {
     });
 };
 
+// ─── TOGGLE VERIFICATION ──────────────────────────────────────────────────────
+// Maps to: PATCH /api/ads/:id/toggleVerification
+
+export const toggleAdVerification = (id) => (dispatch) => {
+  axios
+    .patch(`${baseURL}/admin/ads/${id}/toggleVerification`)
+    .then((res) => {
+      if (res.data.success) {
+        dispatch({
+          type: ActionType.TOGGLE_AD_VERIFICATION,
+          payload: { id, isVerified: res.data.isVerified },
+        });
+        setToast("success", res.data.message);
+      } else {
+        setToast("error", res.data.message);
+      }
+    })
+    .catch((error) => {
+      console.error("toggleAdVerification error:", error);
+      setToast("error", error.message);
+    });
+};
+
+// ─── BULK TOGGLE VERIFICATION ─────────────────────────────────────────────────
+// Maps to: PATCH /api/ads/bulk/toggleVerification  — Body: { ids: [...], isVerified: bool }
+
+export const bulkToggleVerification = (ids, isVerified) => (dispatch) => {
+  axios
+    .patch(`${baseURL}/admin/ads/bulk/toggleVerification`, { ids, isVerified })
+    .then((res) => {
+      if (res.data.success) {
+        dispatch({
+          type: ActionType.BULK_TOGGLE_VERIFICATION,
+          payload: { ids, isVerified },
+        });
+        setToast("success", res.data.message);
+      } else {
+        setToast("error", res.data.message);
+      }
+    })
+    .catch((error) => {
+      console.error("bulkToggleVerification error:", error);
+      setToast("error", error.message);
+    });
+};
+
 // ─── RECORD VIEW ──────────────────────────────────────────────────────────────
 // Maps to: PATCH /api/ads/:id/view
 

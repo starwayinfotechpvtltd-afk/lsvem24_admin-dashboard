@@ -2,7 +2,7 @@ import { Box, Modal } from "@mui/material";
 import Button from "../extra/Button";
 import { resolveMediaUrl } from "../../util/config";
 
-function ShowVideo({ show, url, handleClose, title }) {
+function ShowVideo({ show, url, handleClose, title, isImage = false }) {
   const finalUrl = resolveMediaUrl(url);
   return (
     <div>
@@ -16,17 +16,27 @@ function ShowVideo({ show, url, handleClose, title }) {
           <div className="model-header">
             <p className="m-0">{title}</p>
           </div>
-          <div className="model-body">
-            <video
-              autoPlay
-              controls
-              className="w-100"
-              height={450}
-              style={{ borderRadius: "5px" }}
-            >
-              <source src={finalUrl} type="video/mp4" />
-              Your browser does not support video.
-            </video>
+          <div className="model-body text-center">
+            {isImage ? (
+              <img
+                src={finalUrl}
+                alt={title || "Ad Image"}
+                className="w-100"
+                style={{ maxHeight: 450, objectFit: "contain", borderRadius: "5px" }}
+              />
+            ) : (
+              <video
+                key={finalUrl}
+                autoPlay
+                controls
+                className="w-100"
+                height={450}
+                style={{ borderRadius: "5px" }}
+              >
+                <source src={finalUrl} type="video/mp4" />
+                Your browser does not support video.
+              </video>
+            )}
           </div>
           <div className="model-footer">
             <div className="m-3 d-flex justify-content-end">

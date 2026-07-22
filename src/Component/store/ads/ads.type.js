@@ -12,9 +12,11 @@ export const DELETE_ADS         = "DELETE_ADS";
 // Bulk operations
 export const BULK_DELETE_ADS    = "BULK_DELETE_ADS";
 export const BULK_TOGGLE_STATUS = "BULK_TOGGLE_STATUS";
+export const BULK_TOGGLE_VERIFICATION = "BULK_TOGGLE_VERIFICATION";
 
 // Status toggle
 export const TOGGLE_AD_STATUS   = "TOGGLE_AD_STATUS";
+export const TOGGLE_AD_VERIFICATION = "TOGGLE_AD_VERIFICATION";
 
 // Stats tracking
 export const RECORD_AD_VIEW     = "RECORD_AD_VIEW";

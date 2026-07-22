@@ -6,7 +6,7 @@ import Pagination from "../../extra/Pagination";
 import Table from "../../extra/Table";
 import Searching from "../../extra/Searching";
 import { connect, useDispatch, useSelector } from "react-redux";
-import { getAdsApi, deleteAd } from "../../store/ads/ads.action";
+import { getAdsApi, deleteAd, toggleAdStatus, toggleAdVerification } from "../../store/ads/ads.action";
 import { warning } from "../../../util/Alert";
 import UserImage from "../../../assets/images/8.jpg";
 import $ from "jquery";
@@ -16,6 +16,7 @@ import { IconEdit, IconPlayerPlayFilled, IconTrash } from "@tabler/icons-react";
 import LazyImage from "../../../common/ImageFallback";
 import HandleVideo from "../../../common/HandleVideo";
 import ShowVideo from "../../dialogue/ShowVideo";
+import ToggleSwitch from "../../extra/ToggleSwitch";
 
 function ManageVideo(props) {
   const { startDate, endDate, multiButtonSelectData } = props;
@@ -40,6 +41,8 @@ function ManageVideo(props) {
 
   const [show, setShow] = useState(false);
   const [url, setUrl] = useState();
+  const [isImageModal, setIsImageModal] = useState(false);
+  const [modalTitle, setModalTitle] = useState("Ad Preview");
 
   const toggleReview = (index) => {
     setExpandedTitle((prevState) => ({
@@ -167,6 +170,14 @@ function ManageVideo(props) {
   const handleClose = () => {
     setShow(false);
     setUrl("");
+    setIsImageModal(false);
+  };
+
+  const handleOpenMedia = (mediaUrl, isImg, mediaTitle) => {
+    setUrl(mediaUrl);
+    setIsImageModal(isImg);
+    setModalTitle(mediaTitle || (isImg ? "Ad Image" : "Ad Video"));
+    setShow(true);
   };
 
   const videoMapData = [
@@ -195,106 +206,85 @@ function ManageVideo(props) {
     {
       Header: "ADS",
       body: "video",
-      Cell: ({ row, index }) => (
-        <>
-          <div
-            className="d-flex justify-content-center"
-            onClick={() => {
-              setShow(true);
-              setUrl(row?.videoUrl);
-            }}
-          >
+      Cell: ({ row }) => {
+        const hasVideo = Boolean(row?.video || row?.videoUrl);
+        const hasImage = Boolean(row?.image || row?.videoImage);
+        const mediaUrl = (row?.video || row?.videoUrl) || (row?.image || row?.videoImage);
+        const isImg = !hasVideo && hasImage;
+        const thumbnailSrc = row?.image || row?.videoImage || row?.video || row?.videoUrl;
+
+        return (
+          <div className="d-flex justify-content-center">
             <div
               style={{
                 position: "relative",
                 width: "50px",
                 height: "50px",
-                cursor: "pointer",
+                cursor: mediaUrl ? "pointer" : "default",
+              }}
+              onClick={() => {
+                if (mediaUrl) {
+                  handleOpenMedia(mediaUrl, isImg, hasVideo ? "Ad Video" : "Ad Image");
+                }
               }}
             >
-              <IconPlayerPlayFilled
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)", // centers it
-                  zIndex: 1,
-                  fontSize: "20px", // adjust size as needed
-                  color: "white", // optional: make it visible
-                }}
-              />
+              {hasVideo && (
+                <IconPlayerPlayFilled
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    zIndex: 1,
+                    fontSize: "20px",
+                    color: "white",
+                  }}
+                />
+              )}
               <LazyImage
-                imageSrc={row?.videoImage}
+                imageSrc={thumbnailSrc}
                 width="50px"
                 height="50px"
-                style={{ filter: "brightness(0.5)" }}
+                style={{ filter: hasVideo ? "brightness(0.6)" : "none" }}
               />
             </div>
           </div>
-        </>
-      ),
+        );
+      },
     },
     {
       Header: "USER",
       body: "addedBy",
-      Cell: ({ row, index }) => (
-        <div
-          className="d-flex align-items-center"
-        // style={{ cursor: "pointer" }}
-        // onClick={() =>
-        //   navigate("/admin/userProfile", { state: { id: row?.userId } })
-        // }
-        >
+      Cell: ({ row }) => (
+        <div className="d-flex align-items-center">
           <LazyImage
-            imageSrc={row?.image || row?.userId?.image}
-            width="50px"
-            height="50px"
+            imageSrc={row?.userId?.image}
+            width="40px"
+            height="40px"
+            style={{ borderRadius: "50%" }}
           />
           <span className="text-capitalize ms-3 cursorPointer text-nowrap">
-            {row?.fullName || row?.userId?.fullName}
+            {row?.userId?.fullName || row?.fullName || "Admin"}
           </span>
         </div>
       ),
     },
-    // {
-    //   Header: "Thumbnail",
-    //   body: "Thumbnail",
-    //   Cell: ({ row, index }) => (
-    //     <div className="d-flex justify-content-center">
-    //       <div style={{ position: "relative", width: "80px", height: "100px" }}>
-
-    //         <IconPlayerPlayFilled
-    //           style={{
-    //             position: "absolute",
-    //             top: "50%",
-    //             left: "50%",
-    //             transform: "translate(-50%, -50%)", // centers it
-    //             zIndex: 1,
-    //             fontSize: "24px", // adjust size as needed
-    //             color: "white", // optional: make it visible
-    //           }}
-    //         />
-    //         <LazyImage
-    //           imageSrc={row?.videoImage}
-    //           width="80px"
-    //           height="100px"
-    //           style={{ opacity: 0.8 }}
-    //         />
-    //       </div>
-    //     </div>
-    //   ),
-    // },
-
     {
       Header: "USER ID",
       body: "uniqueId",
-      Cell: ({ row }) => <span className="cursorPointer">{row?.uniqueId}</span>,
+      Cell: ({ row }) => (
+        <span className="cursorPointer">
+          {row?.userId?.uniqueId || row?.uniqueId || "-"}
+        </span>
+      ),
     },
     {
       Header: "ADS ID",
       body: "uniqueVideoId",
       Cell: ({ row }) => (
-        <span className="cursorPointer">{row?.uniqueVideoId}</span>
+        <span className="cursorPointer">
+          {row?.uniqueAdsId || row?.uniqueVideoId || row?._id}
+        </span>
       ),
     },
     {
@@ -318,6 +308,26 @@ function ManageVideo(props) {
           </span>
         );
       },
+    },
+    {
+      Header: "VERIFIED",
+      body: "isVerified",
+      Cell: ({ row }) => (
+        <ToggleSwitch
+          value={row?.isVerified}
+          onClick={() => props.toggleAdVerification(row?._id)}
+        />
+      ),
+    },
+    {
+      Header: "ACTIVE",
+      body: "isActive",
+      Cell: ({ row }) => (
+        <ToggleSwitch
+          value={row?.isActive}
+          onClick={() => props.toggleAdStatus(row?._id)}
+        />
+      ),
     },
 
     {
@@ -364,9 +374,10 @@ function ManageVideo(props) {
   return (
     <div>
       <ShowVideo
-        title={"Video"}
+        title={modalTitle}
         show={show}
         url={url}
+        isImage={isImageModal}
         handleClose={handleClose}
       />
       <div className="user-table mb-3">
@@ -428,4 +439,6 @@ function ManageVideo(props) {
 export default connect(null, {
   getAdsApi,
   deleteAd,
+  toggleAdStatus,
+  toggleAdVerification,
 })(ManageVideo);

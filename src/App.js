@@ -11,6 +11,7 @@ import { LOGIN_ADMIN } from "./Component/store/admin/admin.type";
 import axios from "axios";
 import Registration from "./Component/Pages/Registration";
 import Updatecode from "./Component/Pages/Updatecode";
+// import AppRedirect from "./Component/Pages/AppRedirect";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URI;
 
@@ -43,13 +44,17 @@ function App() {
     });
   }, [token, key, dispatch]);
 
-  if (login === undefined) {
+  const isDeepLink = /^\/(videos|shorts|video|invite|referral)\//.test(window.location.pathname);
+
+  if (login === undefined && !isDeepLink) {
     return <div>Loading...</div>;
   }
 
   return (
     <div className="App">
       <Routes>
+        
+
         <Route path="/forgotPassword" element={<ForgotPassword />} />
         <Route path="/changePassword" element={<SetPassword />} />
 

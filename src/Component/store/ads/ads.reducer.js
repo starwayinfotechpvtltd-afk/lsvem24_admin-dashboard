@@ -111,6 +111,28 @@ export const adReducer = (state = initialState, action) => {
         ),
       };
 
+    // ─── Toggle Single Ad Verification ─────────────────────────────────────
+    case ActionType.TOGGLE_AD_VERIFICATION:
+      return {
+        ...state,
+        adsData: state.adsData.map((ad) =>
+          ad._id === action.payload.id
+            ? { ...ad, isVerified: action.payload.isVerified }
+            : ad
+        ),
+      };
+
+    // ─── Bulk Toggle Verification ──────────────────────────────────────────
+    case ActionType.BULK_TOGGLE_VERIFICATION:
+      return {
+        ...state,
+        adsData: state.adsData.map((ad) =>
+          action.payload.ids.includes(ad._id)
+            ? { ...ad, isVerified: action.payload.isVerified }
+            : ad
+        ),
+      };
+
     // ─── Record View ───────────────────────────────────────────────────────
     case ActionType.RECORD_AD_VIEW:
       return {
