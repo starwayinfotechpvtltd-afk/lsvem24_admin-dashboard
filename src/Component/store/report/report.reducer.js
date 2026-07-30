@@ -14,9 +14,12 @@ export const reportReducer = (state = initialState, action) => {
         totalVideoReport: action.payload.totalData,
       };
     case ActionType.DELETE_VIDEO_REPORT:
+      const deletedIds = Array.isArray(action.payload.id)
+        ? action.payload.id
+        : [action.payload.id];
       return {
         ...state,
-        videoReport: state.videoReport.filter((data) => !action.payload.id.includes(data._id)),
+        videoReport: state.videoReport.filter((item) => !deletedIds.includes(item._id)),
       };
 
     case ActionType.CLEAN_REPORT:

@@ -35,7 +35,6 @@ axios.interceptors.request.use(
     return req;
   },
   (error) => {
-    console.log(error);
   }
 );
 

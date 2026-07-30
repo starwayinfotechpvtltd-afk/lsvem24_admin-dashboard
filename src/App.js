@@ -30,7 +30,6 @@ function App() {
         setLogin(res.data.login);
       })
       .catch((err) => {
-        console.log(err);
         setLogin(false);
       });
   }, []);

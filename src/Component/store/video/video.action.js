@@ -7,7 +7,6 @@ import { baseURL, secretKey } from "../../../util/config";
 // admin/video/getVideos?videoType=${type}&start=${start}&limit=${limit}&startDate=${startDate}&endDate=${endDate}
 const adminData = JSON.parse(sessionStorage.getItem("admin"));
 const userId = adminData?.userId;
-console.log(adminData);
 const admin = sessionStorage.getItem("isAdmin");
 
 export const getVideoApi =
@@ -43,7 +42,6 @@ export const createVideo = (formData) => (dispatch) => {
   axios
     .post(`${baseURL}/admin/video/uploadVideo`, formData)
     .then((res) => {
-      console.log("res.data-->", res.data);
       if (res.data.status) {
         dispatch({
           type: ActionType.IMPORT_VIDEO,

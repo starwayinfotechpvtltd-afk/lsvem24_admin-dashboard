@@ -37,7 +37,6 @@ const Login = () => {
       if (!password) error.password = "password is required !";
       return setError({ ...error });
     } else {
-      console.log("Handle form submit called")
       let login = {
         email,
         password,

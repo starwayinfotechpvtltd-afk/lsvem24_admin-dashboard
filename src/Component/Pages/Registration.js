@@ -29,7 +29,6 @@ const Registration = () => {
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
-    console.log("Registration button clicked");
     if (!email || !password || !newPassword || newPassword !== password) {
       let error = {};
       if (!email) error.email = "Email Is Required !";
@@ -46,7 +45,6 @@ const Registration = () => {
         password,
       };
 
-      console.log(login);
 
       try {
         setLoading(true); // ✅ disable button immediately
@@ -57,7 +55,6 @@ const Registration = () => {
         setLoading(false); // ✅ enable again only after API finishes
       }
     }
-    console.log("Button Clicked");
   };
 
   const [type, setType] = useState("text");

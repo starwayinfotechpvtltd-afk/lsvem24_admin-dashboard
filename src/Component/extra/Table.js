@@ -17,7 +17,6 @@ function Table(props) {
   const [sortColumn, setSortColumn] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
   const [checkBox, setCheckBox] = useState();
-console.log(data)
 
 
 

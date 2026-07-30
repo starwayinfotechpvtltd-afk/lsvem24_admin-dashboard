@@ -8,8 +8,6 @@ const token = sessionStorage.getItem("token");
 
 export const signupAdmin = (signup, navigate) => async (dispatch) => {
   try {
-    console.log("baseURL:", baseURL);
-    console.log("URL:", `${baseURL}/admin/admin/create`);
     const res = await axios.post(`${baseURL}/admin/admin/create`, signup, {
       headers: { key: secretKey },
     });
@@ -55,7 +53,6 @@ export const loginAdmin = (login, navigate, onFinish) => async (dispatch) => {
     })
     .then((res) => {
       if (res.data.status) {
-        console.log(res.data);
         dispatch({
           type: ActionType.LOGIN_ADMIN,
           payload: res.data?.token,
@@ -93,7 +90,7 @@ export const getProfile = () => (dispatch) => {
       }
     })
     .catch((error) => {
-      console.log("error", error.message);
+      
     });
 };
 

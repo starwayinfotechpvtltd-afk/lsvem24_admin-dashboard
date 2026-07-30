@@ -34,6 +34,7 @@ function ManageVideo(props) {
   const [showURLs, setShowURLs] = useState([]);
   const [showVideoURLs, setShowVideoURLs] = useState([]);
   const [expandedTitle, setExpandedTitle] = useState({});
+  const [tabFilter, setTabFilter] = useState("All");
 
   const { dialogue, dialogueType, dialogueData } = useSelector(
     (state) => state.dialogue
@@ -52,14 +53,12 @@ function ManageVideo(props) {
   };
 
   const { adsData, totalVideo } = useSelector((state) => state.ads);
-  console.log(adsData)
 
   const handlePageChange = (pageNumber) => {
     setPage(pageNumber);
   };
   $(document).ready(function () {
     $("img").bind("error", function () {
-      // Set the default image
       $(this).attr("src", UserImage);
     });
   });
@@ -69,9 +68,7 @@ function ManageVideo(props) {
     setSize(value);
   };
   const handleSelectCheckData = (e, row) => {
-
     const checked = e.target.checked;
-
     if (checked) {
       setSelectCheckData((prevSelectedRows) => [...prevSelectedRows, row]);
     } else {
@@ -81,27 +78,25 @@ function ManageVideo(props) {
     }
   };
   const handleSelectAll = (event) => {
-
     const checked = event.target.checked;
     setSelectAllChecked(checked);
     if (checked) {
-      setSelectCheckData([...data]);
+      setSelectCheckData([...displayData]);
     } else {
       setSelectCheckData([]);
     }
   };
 
   const paginationSubmitButton = () => {
-
     const selectCheckDataGetId = selectCheckData?.map((item) => item?._id);
     if (actionPagination === "delete" && selectCheckDataGetId?.length > 0) {
       const data = warning();
       data
         .then((res) => {
-          if (res) {
-            if (res) {
-              props.deleteAd(selectCheckDataGetId);
-            }
+          if (res?.isConfirmed || res === true) {
+            props.deleteAd(selectCheckDataGetId);
+            setSelectCheckData([]);
+            setSelectAllChecked(false);
           }
         })
         .catch((err) => console.log(err));
@@ -109,16 +104,12 @@ function ManageVideo(props) {
   };
 
   const handleDeleteVideo = (row) => {
-
     const data = warning();
     data
       .then((res) => {
-        if (res) {
-          const yes = res.isConfirmed;
-          if (yes) {
-            const id = row?._id;
-            props.deleteAd(id);
-          }
+        if (res?.isConfirmed || res === true) {
+          const id = row?._id;
+          props.deleteAd(id);
         }
       })
       .catch((err) => console.log(err));
@@ -291,7 +282,7 @@ function ManageVideo(props) {
       Header: "TITLE",
       Cell: ({ row, index }) => {
         const isExpanded = expandedTitle[index];
-        const titleText = row?.title;
+        const titleText = row?.title || "";
         const previewText = titleText?.substring(0, 30);
 
         return (
@@ -335,23 +326,19 @@ function ManageVideo(props) {
       body: "action",
       Cell: ({ row }) => (
         <div className="action-button">
-          {/* <Button
-            btnIcon={<EditIcon />}
-            onClick={() => handleEdit(row, "editVideo")}
-          />
-          <Button
-            btnIcon={<TrashIcon />}
-            onClick={() => handleDeleteVideo(row)}
-          /> */}
-
           <button
-            className="btn btn-sm"
+            className="btn btn-sm me-1"
             onClick={() => handleEdit(row, "editVideo")}
+            title="Edit Ad"
           >
             <IconEdit className="text-secondary" />
           </button>
-          <button className="btn btn-sm" onClick={() => handleDeleteVideo(row)}>
-            <IconTrash className="text-secondary" />
+          <button
+            className="btn btn-sm text-danger"
+            onClick={() => handleDeleteVideo(row)}
+            title="Delete Ad"
+          >
+            <IconTrash className="text-danger" />
           </button>
         </div>
       ),
@@ -363,13 +350,15 @@ function ManageVideo(props) {
   }, [adsData]);
 
   useEffect(() => {
-    // const timer = setTimeout(() => {
     dispatch(getAdsApi(1, page, size, startDate, endDate));
-    // }, 2000); // 2000 ms = 2 seconds
-
-    // Cleanup to avoid memory leaks on unmount or dependency change
-    // return () => clearTimeout(timer);
   }, [dispatch, startDate, endDate, page, size]);
+
+  // Compute display data filtered by selected Tab (All, Verified, Active)
+  const displayData = (data || []).filter((item) => {
+    if (tabFilter === "Verified") return item?.isVerified === true;
+    if (tabFilter === "Active") return item?.isActive === true;
+    return true; // "All"
+  });
 
   return (
     <div>
@@ -380,6 +369,33 @@ function ManageVideo(props) {
         isImage={isImageModal}
         handleClose={handleClose}
       />
+
+      {/* Filter Tabs placed above Manage & Edit Ads */}
+      <div className="d-flex align-items-center mb-3 bg-white p-3 rounded border shadow-sm">
+        <div className="d-flex align-items-center gap-2">
+          {[
+            { id: "All", label: "All", count: (data || []).length },
+            { id: "Verified", label: "Verified", count: (data || []).filter((i) => i?.isVerified === true).length },
+            { id: "Active", label: "Active", count: (data || []).filter((i) => i?.isActive === true).length },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              className={`btn ${tabFilter === tab.id ? "btn-primary text-white fw-bold" : "btn-light text-dark"} rounded-pill px-4 py-2 border me-2`}
+              onClick={() => setTabFilter(tab.id)}
+              style={{ fontSize: "14px", cursor: "pointer", transition: "all 0.2s ease" }}
+            >
+              {tab.label}{" "}
+              <span
+                className={`badge ms-2 ${tabFilter === tab.id ? "bg-white text-primary" : "bg-secondary text-white"} rounded-pill`}
+              >
+                {tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="user-table mb-3">
         <div className="user-table-top">
           <div className="d-flex justify-content-between w-100">
@@ -413,7 +429,7 @@ function ManageVideo(props) {
           </div>
         </div>
         <Table
-          data={data}
+          data={displayData}
           mapData={videoMapData}
           serverPerPage={size}
           serverPage={page}

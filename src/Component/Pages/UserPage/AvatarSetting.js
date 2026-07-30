@@ -25,7 +25,6 @@ function AvatarSetting(props) {
   const [userId, setUserId] = useState("");
   const [isChannel, setIsChannel] = useState("");
   const { userProfile, countryData } = useSelector((state) => state.user);
-  console.log("userProfile", userProfile);
 
   const { dialogue, dialogueType, dialogueData } = useSelector(
     (state) => state.dialogue

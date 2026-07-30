@@ -16,6 +16,7 @@ import { IconEdit, IconPlayerPlayFilled, IconTrash } from "@tabler/icons-react";
 import LazyImage from "../../../common/ImageFallback";
 import HandleVideo from "../../../common/HandleVideo";
 import ShowVideo from "../../dialogue/ShowVideo";
+import dayjs from "dayjs";
 
 function ManageShorts(props) {
   const { startDate, endDate, multiButtonSelectData } = props;
@@ -265,7 +266,7 @@ function ManageShorts(props) {
       Header: "TITLE",
       Cell: ({ row, index }) => {
         const isExpanded = expandedTitle[index];
-        const titleText = row?.title;
+        const titleText = row?.title || "";
         const previewText = titleText?.substring(0, 30);
 
         return (
@@ -282,6 +283,52 @@ function ManageShorts(props) {
           </span>
         );
       },
+    },
+    {
+      Header: "VIEWS",
+      body: "views",
+      Cell: ({ row }) => (
+        <span className="fw-semibold text-primary">{row?.views || 0}</span>
+      ),
+    },
+    {
+      Header: "LIKES",
+      body: "like",
+      Cell: ({ row }) => (
+        <span className="fw-semibold text-success">{row?.like || 0}</span>
+      ),
+    },
+    {
+      Header: "DISLIKES",
+      body: "dislike",
+      Cell: ({ row }) => (
+        <span className="text-muted">{row?.dislike || 0}</span>
+      ),
+    },
+    {
+      Header: "SHARES",
+      body: "shareCount",
+      Cell: ({ row }) => (
+        <span className="text-info">{row?.shareCount || 0}</span>
+      ),
+    },
+    {
+      Header: "PRIVACY",
+      body: "videoPrivacyType",
+      Cell: ({ row }) => (
+        <span className={`badge ${row?.videoPrivacyType === 2 ? "bg-warning text-dark" : "bg-success text-white"}`}>
+          {row?.videoPrivacyType === 2 ? "Paid" : "Free"}
+        </span>
+      ),
+    },
+    {
+      Header: "CREATED AT",
+      body: "createdAt",
+      Cell: ({ row }) => (
+        <span className="text-nowrap text-muted">
+          {row?.createdAt ? dayjs(row?.createdAt).format("YYYY-MM-DD") : "-"}
+        </span>
+      ),
     },
 
 

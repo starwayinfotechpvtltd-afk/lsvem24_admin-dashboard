@@ -14,18 +14,22 @@ export const getVideoReport = (start,limit,startDate,endDate,type) => (dispatch)
   };
   
   export const deleteVideoReport = (id) => (dispatch) => {
-    axios
-      .delete(`${baseURL}/admin/report/deleteVideoReport?reportId=${id}`)
-      .then((res) => {
-        if (res.data.status) {
-          dispatch({ type: ActionType.DELETE_VIDEO_REPORT, payload: {id:id} });
-          setToast("success","Video Report Delete SuccessFully");
-        } else {
-          setToast("error", res.data.message);
-        }
-      })
-      .catch((error) => console.log(error));
-  };
+  const reportId = Array.isArray(id) ? id.join(",") : id;
+  axios
+    .delete(`${baseURL}/admin/report/deleteVideoReport?reportId=${reportId}`)
+    .then((res) => {
+      if (res.data.status) {
+        dispatch({ type: ActionType.DELETE_VIDEO_REPORT, payload: { id: id } });
+        setToast("success", "Report Deleted Successfully");
+      } else {
+        setToast("error", res.data.message || "Failed to delete report");
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      setToast("error", error.message || "Failed to delete report");
+    });
+};
 
   export const cleanReportData = () => (dispatch) => {
     dispatch({ type: ActionType.CLEAN_REPORT });

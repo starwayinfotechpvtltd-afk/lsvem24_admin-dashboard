@@ -6,10 +6,8 @@ import {baseURL , secretKey} from "../../../util/config"
 
 const adminData = JSON.parse(sessionStorage.getItem("admin"));
 const userId = adminData?.userId;
-console.log(adminData);
 const admin = sessionStorage.getItem("isAdmin");
 const userType=admin === "true"? "admin": "user"
-console.log(userType)
 
 export const getShortsApi = (type,start,limit,startDate,endDate) => (dispatch) => {
   apiInstanceFetch

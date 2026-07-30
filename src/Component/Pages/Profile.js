@@ -350,6 +350,35 @@ function Profile(props) {
                 </div>
               </div>
             </div>
+            {/* <div className="col-lg-6 col-sm-12">
+              <div className="mb-4">
+                <div className="withdrawal-box payment-box">
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <h6 className="mb-0">Influencer</h6>
+                    <Button
+                      btnName={data?.isInfluencer ? "Influencer Active" : "Become Influencer"}
+                      type={"button"}
+                      onClick={() => {
+                        props.profileUpdate({ isInfluencer: true });
+                      }}
+                      disabled={data?.isInfluencer}
+                      newClass={"submit-btn"}
+                      style={{
+                        borderRadius: "0.5rem",
+                        padding: "6px 12px",
+                        fontSize: "12px",
+                        backgroundColor: data?.isInfluencer ? "#28a745" : undefined,
+                      }}
+                    />
+                  </div>
+                  <p className="text-muted" style={{ fontSize: "14px" }}>
+                    {data?.isInfluencer
+                      ? "✨ You are an active Influencer with full creator privileges and exclusive perks."
+                      : "Click the Become Influencer button placed top right corner to activate your Influencer status."}
+                  </p>
+                </div>
+              </div>
+            </div> */}
           </div>
         </div>
       </div>

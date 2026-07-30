@@ -29,7 +29,6 @@ function ManageUser(props) {
   const [selectAllChecked, setSelectAllChecked] = useState(false);
   const [search, setSearch] = useState();
   const { user, totalUser } = useSelector((state) => state.user);
-  console.log("user", user);
 
 
   const [data, setData] = useState();

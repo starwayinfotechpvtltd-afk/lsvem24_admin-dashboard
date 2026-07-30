@@ -4,6 +4,7 @@ import MultiButton from "../../extra/MultiButton";
 import UserProfileSetting from "./UserProfileSetting";
 import PasswordSetting from "./PasswordSetting";
 import AvatarSetting from "./AvatarSetting";
+import InfluencerSetting from "./InfluencerSetting";
 import { connect, useDispatch, useSelector } from "react-redux";
 import Button from "../../extra/Button";
 import { getUserProfile } from "../../store/user/user.action";
@@ -56,7 +57,7 @@ function UserSetting() {
               setMultiButtonSelect={setMultiButtonSelect}
               multiButtonSelect={multiButtonSelect}
               name={`User Profile`}
-              labelData={["Profile", "Password", "Avatar"]}
+              labelData={["Profile", "Password", "Avatar", "Influencer"]}
             />
           </div>
         </div>
@@ -77,6 +78,9 @@ function UserSetting() {
       )}
       {multiButtonSelect == "Avatar" && (
         <AvatarSetting multiButtonSelectNavigate={multiButtonSelect} />
+      )}
+      {multiButtonSelect == "Influencer" && (
+        <InfluencerSetting multiButtonSelectNavigate={multiButtonSelect} />
       )}
     </div>
   );

@@ -9,9 +9,7 @@ import { baseURL } from "../../../util/config";
 
 const adminData = JSON.parse(sessionStorage.getItem("admin"));
 const userId = adminData?.userId;
-console.log(adminData);
 const admin = sessionStorage.getItem("isAdmin");
-console.log(admin);
 
 export const getAdsApi =
   (type, page = 1, limit = 10, search = "", placement = "", isActive = "") =>
@@ -121,39 +119,43 @@ export const updateAd = (id, formData) => (dispatch) => {
 // Maps to: DELETE /api/ads/:id
 
 export const deleteAd = (id) => (dispatch) => {
-  axios
-    .delete(`${baseURL}/admin/ads/${id}`)
+  if (Array.isArray(id)) {
+    return dispatch(bulkDeleteAds(id));
+  }
+
+  apiInstanceFetch
+    .get(`admin/ads/deleteAds?adId=${id}`)
     .then((res) => {
-      if (res.data.success) {
+      if (res.success || res.status) {
         dispatch({ type: ActionType.DELETE_ADS, payload: id });
         setToast("success", "Ad deleted successfully!");
       } else {
-        setToast("error", res.data.message);
+        setToast("error", res.message || "Failed to delete ad");
       }
     })
     .catch((error) => {
       console.error("deleteAd error:", error);
-      setToast("error", error.message);
+      setToast("error", error.message || "Failed to delete ad");
     });
 };
 
 // ─── BULK DELETE ──────────────────────────────────────────────────────────────
-// Maps to: DELETE /api/ads/bulk  — Body: { ids: [...] }
 
 export const bulkDeleteAds = (ids) => (dispatch) => {
-  axios
-    .delete(`${baseURL}/admin/ads/bulk`, { data: { ids } })
+  const idArray = Array.isArray(ids) ? ids : [ids];
+  apiInstanceFetch
+    .get(`admin/ads/bulkDeleteAds?ids=${idArray.join(",")}`)
     .then((res) => {
-      if (res.data.success) {
-        dispatch({ type: ActionType.BULK_DELETE_ADS, payload: ids });
-        setToast("success", res.data.message);
+      if (res.success || res.status) {
+        dispatch({ type: ActionType.BULK_DELETE_ADS, payload: idArray });
+        setToast("success", res.message || "Ads deleted successfully!");
       } else {
-        setToast("error", res.data.message);
+        setToast("error", res.message || "Failed to delete ads");
       }
     })
     .catch((error) => {
       console.error("bulkDeleteAds error:", error);
-      setToast("error", error.message);
+      setToast("error", error.message || "Failed to delete ads");
     });
 };
 

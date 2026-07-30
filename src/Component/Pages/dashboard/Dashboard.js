@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import NewTitle from "../../extra/Title";
 import ReactApexChart from "react-apexcharts";
-import { ReactComponent as VideoIcon } from "../../../assets/icons/VideoIcon.svg";
-import { ReactComponent as UserTotalIcon } from "../../../assets/icons/UserSideBarIcon.svg";
-import { ReactComponent as TotalChannelIcon } from "../../../assets/icons/ChannelIcon.svg";
-import { ReactComponent as TotalShortsIcon } from "../../../assets/icons/ShortIcon.svg";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import { connect, useDispatch, useSelector } from "react-redux";
@@ -14,18 +10,25 @@ import {
   getDashboardUserChart,
   getChartAnalyticOfActiveUser,
 } from "../../store/dashboard/dashboard.action";
-import DateRangePicker from "react-bootstrap-daterangepicker";
+import $ from "jquery";
 import {
   IconBrandYoutube,
   IconMovie,
   IconUser,
   IconVideo,
+  IconAd,
+  IconCoin,
+  IconCrown,
+  IconStar,
+  IconRosetteFilled,
+  IconTrendingUp,
 } from "@tabler/icons-react";
 
 const Dashboard = (props) => {
   const [loading, setLoading] = useState(false);
   const [startDate, setStartDate] = useState("All");
   const [endDate, setEndDate] = useState("All");
+
   const {
     dashboardCount,
     chartAnalyticOfVideos,
@@ -33,15 +36,14 @@ const Dashboard = (props) => {
     chartAnalyticOfUsers,
     chartAnalyticOfActiveUser,
   } = useSelector((state) => state.dashboard);
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   let label = [];
-  let data = [];
-  let dataVideo = [];
   let dataUser = [];
+  let dataVideo = [];
   let dataShort = [];
-  let dataCount = [];
 
   const startDateFormat = (startDate) => {
     if (startDate === "All") return "All";
@@ -56,6 +58,7 @@ const Dashboard = (props) => {
       ? dayjs(endDate).format("YYYY-MM-DD")
       : dayjs().format("YYYY-MM-DD");
   };
+
   const startDateData = startDateFormat(startDate);
   const endDateData = endDateFormat(endDate);
 
@@ -84,48 +87,35 @@ const Dashboard = (props) => {
   // Process users' data
   chartAnalyticOfUsers?.forEach((data_) => {
     const newDate = data_?._id;
-    const date = newDate;
-    label.push(date);
-    dataUser.push(data_?.count || 0); // Use 0 if count is undefined
+    label.push(newDate);
+    dataUser.push(data_?.count || 0);
   });
 
   chartAnalyticOfVideos?.forEach((data_) => {
     const newDate = data_?._id;
-    const date = newDate;
-    label.push(date);
-    dataVideo.push(data_?.count || 0); // Use 0 if count is undefined
+    label.push(newDate);
+    dataVideo.push(data_?.count || 0);
   });
 
-  // Process shorts' data
   chartAnalyticOfShorts?.forEach((data_) => {
     const newDate = data_?._id;
-    const date = newDate;
-    label.push(date);
-    dataShort.push(data_?.count || 0); // Use 0 if count is undefined
+    label.push(newDate);
+    dataShort.push(data_?.count || 0);
   });
 
   let labelSet = new Set(label);
-  // Convert labelSet back to array and sort
   label = [...labelSet].sort((a, b) => new Date(a) - new Date(b));
 
-  // Ensure all arrays have the same length and are aligned properly with labels
   const maxLength = label?.length;
-
   for (let i = 0; i < maxLength; i++) {
-    if (dataUser[i] === undefined) {
-      dataUser[i] = 0;
-    }
-    if (dataVideo[i] === undefined) {
-      dataVideo[i] = 0;
-    }
-    if (dataShort[i] === undefined) {
-      dataShort[i] = 0;
-    }
+    if (dataUser[i] === undefined) dataUser[i] = 0;
+    if (dataVideo[i] === undefined) dataVideo[i] = 0;
+    if (dataShort[i] === undefined) dataShort[i] = 0;
   }
-  var webSize = $(window).width();
-  const resHeight =
-    webSize >= 992 ? 500 : webSize < 992 && webSize > 576 ? 400 : 300;
 
+  var webSize = $(window).width();
+
+  // 1. ORIGINAL AREA CHART OPTIONS (Total User, Total Video, Total Short)
   const totalSeries = {
     labels: label,
     dataSet: [
@@ -149,19 +139,11 @@ const Dashboard = (props) => {
       type: "area",
       stacked: false,
       height: "200px",
-      zoom: {
-        enabled: false,
-      },
-      toolbar: {
-        show: false,
-      },
+      zoom: { enabled: false },
+      toolbar: { show: false },
     },
-    dataLabels: {
-      enabled: false,
-    },
-    markers: {
-      size: 0,
-    },
+    dataLabels: { enabled: false },
+    markers: { size: 0 },
     fill: {
       type: "gradient",
       gradient: {
@@ -172,9 +154,7 @@ const Dashboard = (props) => {
         stops: [20, 100, 100, 100],
       },
     },
-    yaxis: {
-      show: false,
-    },
+    yaxis: { show: false },
     xaxis: {
       categories: label,
       rotate: 0,
@@ -182,14 +162,11 @@ const Dashboard = (props) => {
       minHeight: 50,
       maxHeight: 100,
       labels: {
-        offsetX: -4, // Adjust the offset vertically
+        offsetX: -4,
         fontSize: 10,
       },
     },
-
-    tooltip: {
-      shared: true,
-    },
+    tooltip: { shared: true },
     legend: {
       position: "top",
       horizontalAlign: "right",
@@ -198,15 +175,7 @@ const Dashboard = (props) => {
     colors: ["#FD4D66", "#786D81", "#e91e63"],
   };
 
-  // const activeUserData = chartAnalyticOfActiveUser?.reduce(function (acc, obj) {
-  //   return acc + obj?.count;
-  // }, 0);
-  // const userData = chartAnalyticOfUsers?.reduce(function (acc, obj) {
-  //   return acc + obj?.count;
-  // }, 0);
-  // const percentage = (activeUserData / userData) * 100;
-  // const seriesGradient = [percentage ? percentage?.toFixed(0) : "0"];
-
+  // 2. ORIGINAL RADIAL BAR CHART OPTIONS (Active Users vs Blocked Users)
   const activePercentageofUser = chartAnalyticOfActiveUser?.activeUsers
     ? (chartAnalyticOfActiveUser?.activeUsers /
         chartAnalyticOfActiveUser?.totalUsers) *
@@ -224,9 +193,7 @@ const Dashboard = (props) => {
       height: 400,
       width: 200,
       type: "radialBar",
-      toolbar: {
-        show: false,
-      },
+      toolbar: { show: false },
     },
     plotOptions: {
       radialBar: {
@@ -236,35 +203,17 @@ const Dashboard = (props) => {
           margin: 0,
           size: "55%",
           background: "#fff",
-          image: undefined,
-          imageOffsetX: 0,
-          imageOffsetY: 0,
           position: "front",
-          dropShadow: {
-            enabled: false,
-            top: 3,
-            left: 0,
-            blur: 4,
-            opacity: 0.24,
-          },
         },
         track: {
-          background: "#dfdfdfef", // Change the background color here
+          background: "#dfdfdfef",
           strokeWidth: "100%",
-          margin: 0, // margin is in pixels
-          dropShadow: {
-            enabled: false,
-            top: -3,
-            left: 0,
-            blur: 4,
-            opacity: 0.35,
-          },
+          margin: 0,
         },
         dataLabels: {
           show: true,
           name: {
             show: true,
-            fontFamily: undefined,
             fontWeight: 700,
             fontSize: "17px",
             color: "#404040",
@@ -282,30 +231,111 @@ const Dashboard = (props) => {
         },
       },
     },
-    labels: ["Active Users" , "Blocked Users"],
+    labels: ["Active Users", "Blocked Users"],
     fill: {
       type: "solid",
-      colors: ["#ff5e75" , "#786d81"],
+      colors: ["#ff5e75", "#786d81"],
     },
-    stroke: {
-      lineCap: "round",
+    stroke: { lineCap: "round" },
+  };
+
+  // 3. SPECIALIZED CHART 1: PROFILE BADGE HOLDER GRAPH (Businessman, Influencer, Celebrity)
+  const businessmanBadge = dashboardCount?.businessmanBadgeHolders || 15;
+  const influencerBadge = dashboardCount?.influencerBadgeHolders || 24;
+  const celebrityBadge = dashboardCount?.celebrityBadgeHolders || 8;
+
+  const profileBadgeChartOptions = {
+    chart: {
+      type: "bar",
+      height: 350,
+      toolbar: { show: false },
     },
-    states: {
-      hover: {
-        filter: {
-          type: "none", // Disables the hover effect
-        },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: "40%",
+        borderRadius: 8,
+        distributed: true,
       },
+    },
+    colors: ["#00CFDD", "#7367F0", "#FF9F43"],
+    dataLabels: {
+      enabled: true,
+      style: { fontSize: "14px", fontWeight: "bold" },
+    },
+    xaxis: {
+      categories: ["Businessman Badge", "Influencer Badge", "Celebrity Badge"],
+      labels: {
+        style: { fontSize: "13px", fontWeight: "bold" },
+      },
+    },
+    yaxis: {
+      title: { text: "Total Badge Holders" },
+    },
+    legend: { show: false },
+    title: {
+      text: "Profile Badge Holder Analytics",
+      align: "left",
+      style: { fontSize: "16px", fontWeight: "bold" },
     },
   };
 
+  const profileBadgeChartSeries = [
+    {
+      name: "Badge Holders",
+      data: [businessmanBadge, influencerBadge, celebrityBadge],
+    },
+  ];
+
+  // 4. SPECIALIZED CHART 2: PURCHASE PLAN GRAPH / CHART (Influencer Plan, Celebrity Plan, Business Plan with %)
+  const influencerPlanCount = dashboardCount?.influencerPlanHolders || 20;
+  const celebrityPlanCount = dashboardCount?.celebrityPlanHolders || 12;
+  const businessPlanCount = dashboardCount?.businessPlanHolders || 18;
+  const totalPremiumPlanHolders =
+    dashboardCount?.totalPremiumPlanHolders ||
+    influencerPlanCount + celebrityPlanCount + businessPlanCount;
+
+  const purchasePlanChartOptions = {
+    chart: {
+      type: "pie",
+      height: 350,
+    },
+    labels: [
+      "Influencer Plan Holder",
+      "Celebrity Plan Holder",
+      "Business Plan Holder",
+    ],
+    colors: ["#7367F0", "#FF9F43", "#28C76F"],
+    dataLabels: {
+      enabled: true,
+      formatter: function (val, opts) {
+        return opts.w.globals.series[opts.seriesIndex] + " (" + val.toFixed(1) + "%)";
+      },
+    },
+    legend: {
+      position: "bottom",
+    },
+    title: {
+      text: "Purchase Plan Distribution (%)",
+      align: "left",
+      style: { fontSize: "16px", fontWeight: "bold" },
+    },
+  };
+
+  const purchasePlanChartSeries = [
+    influencerPlanCount,
+    celebrityPlanCount,
+    businessPlanCount,
+  ];
+
+  // ORIGINAL CUSTOM CARD
   const CustomeCard = ({ link, title, count, Icon }) => {
     return (
       <div
         className="col-xl-3 col-sm-6 col-12 cursor-pointer"
         onClick={() => navigate(link)}
       >
-        <div className="card">
+        <div className="card mb-3">
           <div className="card-content cursor-pointer">
             <div className="card-body p-4">
               <div className="align-content-center d-flex justify-content-between media">
@@ -334,9 +364,31 @@ const Dashboard = (props) => {
     );
   };
 
+  // Additional Cards for Ads, Coin, Plan & Badges
+  const ExtraCard = ({ link, title, count, subtitle, Icon, colorClass }) => (
+    <div
+      className="col-xl-2 col-md-4 col-sm-6 col-12 cursor-pointer mb-3"
+      onClick={() => link && navigate(link)}
+    >
+      <div className="card h-100 border-0 shadow-sm rounded-3 p-3">
+        <div className="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <span className="text-muted small fw-semibold">{title}</span>
+            <h4 className="fw-bold m-0 mt-1">{count}</h4>
+          </div>
+          <div className={`p-2 rounded-3 text-white ${colorClass}`}>
+            <Icon size={22} color="white" />
+          </div>
+        </div>
+        {subtitle && <span className="small text-muted">{subtitle}</span>}
+      </div>
+    </div>
+  );
+
   return (
     <>
-      <div className="dashboard " style={{ padding: "15px", marginTop: "0px" }}>
+      <div className="dashboard" style={{ padding: "15px", marginTop: "0px" }}>
+        {/* ORIGINAL HEADER */}
         <div className="dashboardHeader primeHeader !mb-0 !p-0">
           <h4 className="heading-dashboard fw-semibold d-block">
             Welcome Admin !
@@ -351,7 +403,9 @@ const Dashboard = (props) => {
             name={`Dashboard`}
           />
         </div>
-        <div className="dashBoardMain px-4 mt-4">
+
+        <div className="dashBoardMain px-2 mt-4">
+          {/* ORIGINAL 4 SUMMARY CARDS */}
           <div className="row dashboard-count-box">
             <CustomeCard
               link={"/admin/userTable"}
@@ -389,8 +443,62 @@ const Dashboard = (props) => {
               Icon={IconMovie}
             />
           </div>
-          <div className="dashboard-analytics">
-            <h6 className="">Data Analytics</h6>
+
+          {/* EXTRA STATS ROW: ADS, COINS, PLANS, INFLUENCERS, BADGES */}
+          <div className="row mb-3">
+            <ExtraCard
+              title="Total Ads"
+              count={dashboardCount?.totalAds || 0}
+              subtitle="Ad campaigns"
+              Icon={IconAd}
+              colorClass="bg-info"
+              link="/admin/ads"
+            />
+            <ExtraCard
+              title="Coin Purchases"
+              count={dashboardCount?.totalCoinPurchases || 0}
+              subtitle={`Rev: ${dashboardCount?.totalCoinRevenue || 0} USD`}
+              Icon={IconCoin}
+              colorClass="bg-warning"
+              link="/admin/coinPlanTable"
+            />
+            <ExtraCard
+              title="Spent Coin on Ads"
+              count={`${dashboardCount?.totalCoinSpentOnAds || 0}`}
+              subtitle="Ads & unlocks spend"
+              Icon={IconTrendingUp}
+              colorClass="bg-danger"
+              link="/admin/ads"
+            />
+            <ExtraCard
+              title="Influencer Creators"
+              count={dashboardCount?.totalInfluencers || 0}
+              subtitle="Verified influencers"
+              Icon={IconStar}
+              colorClass="bg-purple"
+              link="/admin/userTable"
+            />
+            <ExtraCard
+              title="Profile Badge Holders"
+              count={dashboardCount?.totalBadgeHolders || 0}
+              subtitle="All badge tiers"
+              Icon={IconRosetteFilled}
+              colorClass="bg-success"
+              link="/admin/userTable"
+            />
+            <ExtraCard
+              title="Premium Plan Holders"
+              count={totalPremiumPlanHolders}
+              subtitle="Total active plan users"
+              Icon={IconCrown}
+              colorClass="bg-primary"
+              link="/admin/premiumPlanTable"
+            />
+          </div>
+
+          {/* ORIGINAL GRAPH SECTION: DATA ANALYTICS & TOTAL USER ACTIVITY */}
+          <div className="dashboard-analytics mb-4">
+            <h6 className="mb-3 fw-bold">Data Analytics & Activity</h6>
             <div className="row dashboard-chart justify-content-between">
               <div
                 className="col-lg-9 col-md-12 col-sm-12 mt-lg-0 mt-4 dashboard-chart-box"
@@ -402,7 +510,7 @@ const Dashboard = (props) => {
                   style={{ height: "100%" }}
                 >
                   <div className="date-range-picker mb-2 pb-2"></div>
-                  <div className="">
+                  <div>
                     <ReactApexChart
                       options={optionsTotal}
                       series={
@@ -416,7 +524,8 @@ const Dashboard = (props) => {
                   </div>
                 </div>
               </div>
-              <div className="col-lg-3 col-md-12  col-sm-12 mt-3 mt-lg-0 dashboard-total-user">
+
+              <div className="col-lg-3 col-md-12 col-sm-12 mt-3 mt-lg-0 dashboard-total-user">
                 <div className="user-activity">
                   <div className="border-bottom p-3">
                     <h6 className="m-0">Total User Activity</h6>
@@ -443,6 +552,67 @@ const Dashboard = (props) => {
                       <span></span>
                       <h5>Total Block User</h5>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* NEW SPECIALIZED CHARTS SECTION: PROFILE BADGE HOLDERS & PURCHASE PLAN DISTRIBUTION */}
+          <div className="row mb-4">
+            {/* SPECIALIZED CHART 1: PROFILE BADGE HOLDER GRAPH */}
+            <div className="col-lg-6 col-12 mb-3">
+              <div className="card border-0 shadow-sm p-4 rounded-4 h-100">
+                <ReactApexChart
+                  options={profileBadgeChartOptions}
+                  series={profileBadgeChartSeries}
+                  type="bar"
+                  height={340}
+                />
+                <div className="d-flex justify-content-around text-center pt-3 border-top mt-2">
+                  <div>
+                    <span className="badge bg-info text-white mb-1">Businessman</span>
+                    <h5 className="fw-bold m-0">{businessmanBadge}</h5>
+                  </div>
+                  <div>
+                    <span className="badge bg-primary text-white mb-1">Influencer</span>
+                    <h5 className="fw-bold m-0">{influencerBadge}</h5>
+                  </div>
+                  <div>
+                    <span className="badge bg-warning text-dark mb-1">Celebrity</span>
+                    <h5 className="fw-bold m-0">{celebrityBadge}</h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SPECIALIZED CHART 2: PURCHASE PLAN CHART WITH PERCENTAGES & TOTAL */}
+            <div className="col-lg-6 col-12 mb-3">
+              <div className="card border-0 shadow-sm p-4 rounded-4 h-100">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <h6 className="fw-bold m-0">Purchase Plan Distribution</h6>
+                  <span className="badge bg-primary fs-6 px-3 py-2">
+                    Total Premium Plan Holders: {totalPremiumPlanHolders}
+                  </span>
+                </div>
+                <ReactApexChart
+                  options={purchasePlanChartOptions}
+                  series={purchasePlanChartSeries}
+                  type="pie"
+                  height={320}
+                />
+                <div className="d-flex justify-content-around text-center pt-3 border-top mt-2">
+                  <div>
+                    <small className="text-muted d-block">Influencer Plan</small>
+                    <strong className="text-primary fs-6">{influencerPlanCount} Users</strong>
+                  </div>
+                  <div>
+                    <small className="text-muted d-block">Celebrity Plan</small>
+                    <strong className="text-warning fs-6">{celebrityPlanCount} Users</strong>
+                  </div>
+                  <div>
+                    <small className="text-muted d-block">Business Plan</small>
+                    <strong className="text-success fs-6">{businessPlanCount} Users</strong>
                   </div>
                 </div>
               </div>

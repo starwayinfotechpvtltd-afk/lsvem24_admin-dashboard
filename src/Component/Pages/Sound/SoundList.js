@@ -36,7 +36,6 @@ function SoundList(props) {
   );
 
   const { soundListData } = useSelector((state) => state.sound);
-  console.log("soundListData", soundListData);
 
 
   // $(document).ready(function () {

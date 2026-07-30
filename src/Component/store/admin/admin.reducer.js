@@ -10,7 +10,6 @@ const initialState = {
 
 export const adminReducer = (state = initialState, action) => {
   let decode;
-  console.log(action?.data?.data);
   switch (action.type) {
     case ActionType.LOGIN_ADMIN:
       if (action.payload) {
