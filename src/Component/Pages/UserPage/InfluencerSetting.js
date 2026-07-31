@@ -37,7 +37,7 @@ export default function InfluencerSetting(props) {
       );
       if (res.data.status) {
         const rawList = res.data.influencers || [];
-        const filtered = rawList.filter((inf) => inf._id !== userId);
+        const filtered = rawList.filter((inf) => inf._id !== userId && inf.isInfluencer === true);
         setInfluencers(filtered);
       }
     } catch (error) {
